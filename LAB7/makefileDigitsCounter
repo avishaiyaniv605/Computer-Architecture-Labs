@@ -1,0 +1,20 @@
+# All Targets
+all: DC
+
+# Tool invocations
+# Executable "LineParser" depends on the files LineParser.o and run.o.
+DC: DC.o
+	gcc -g -m32 -Wall -o DC DC.o
+
+
+
+DC.o: DC.c
+	gcc -m32 -g -Wall -fno-pie -c -o DC.o DC.c
+ 
+
+#tell make that "clean" is not a file name!
+.PHONY: clean
+
+#Clean the build directory
+clean: 
+	rm -f *.o DC

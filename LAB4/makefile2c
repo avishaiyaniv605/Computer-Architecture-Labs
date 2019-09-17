@@ -1,0 +1,24 @@
+#All Targets
+all: flame2
+
+#Tool invocation
+#Executable "task2c" depends on the files task2c.o util.o start.o
+flame2: task2c.o util.o start.o
+	ld -m elf_i386 start.o task2c.o util.o -o flame2
+
+# Depends on the source and header files
+start.o: start.s
+	nasm -f elf start.s -o start.o
+
+util.o: util.c util.h
+	gcc -m32 -g -Wall -ansi -c -nostdlib -fno-stack-protector util.c -o util.o
+
+task2c.o: task2c.c
+	gcc -m32 -g -Wall -ansi -c -nostdlib -fno-stack-protector task2c.c -o task2c.o
+
+
+
+.PHONY: clean
+
+clean:
+	rm -f *.o flame2
