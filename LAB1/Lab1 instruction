@@ -1,0 +1,234 @@
+1 Introduction to C Programming in a Unix (Linux 32 bits) Environment
+2 (This lab is to be done SOLO)
+2.1 Task 0: Maintaining a project using make
+2.1.1 Important
+2.1.2 Control+D, Control+C and Control+Z
+2.1.3 Writing a simple program
+2.2 Task 1: The encoder program
+2.2.1 Task 1a: A restricted encoder version - conversion to lowercase
+2.2.2 Task 1b: Extending the encoder to support debug mode
+2.2.3 Task 1c: Extending the encoder to support encryption
+2.2.4 Task 1d: Supporting input from a file
+2.2.5 Task 2: Supporting output to a file
+2.2.6 Deliverables:
+Introduction to C Programming in a Unix (Linux 32 bits) Environment
+Lab goals:
+
+C primer
+Parsing command-line arguments
+Undestanding character encoding (ASCII)
+Implementing a debug mode for your program
+Introduction to standard streams (stdin, stdout, stderr)
+Simple stream IO library functions
+
+(This lab is to be done SOLO)
+Task 0: Maintaining a project using make
+You should perform this task before attending the lab session. For this task, 3 files are provided: add.s, main.c, numbers.c. The first file is assembly language code, and the other 2 are C source code.
+
+Log in to Linux.
+Decide on an ASCII text editor of your choice (vi, emacs, kate, pico, nano, femto, or whatever). It is your responsibility to know how to operate the text editor well enough for all tasks in all labs.
+Using the text editor that you decided to use, write a makefile for the given files (as explained in the introduction to GNU Make Manual, see the Reading Material). The Makefile should provide targets for compiling the program and cleaning up the working directory.
+Compile the project by executing make in the console.
+Read all of lab1 reading material before attending the lab.
+Read puts(3) and printf(3) manuals. What is the difference between the functions? To read the manuals type man followed by the function name (e.g. man puts).
+Important
+To protect your files from being viewed or copied by other people, thereby possibly earning you a disciplinary hearing, employ the Linux permission system by running:
+chmod 700 ~
+In order to make sure you have sufficient space in your workspace, run the following command once you're logged in
+
+du -a | sort -n
+Then you can see a list of your files/directories and the amount of space each file/directory takes.
+
+If you need space and KNOW which files to remove, you can do that by:
+
+rm -f [filename]
+Control+D, Control+C and Control+Z
+What does Control+D (^D) do?
+Control+D causes the Unix terminal driver to signal the EOF condition to the process running in this terminal foreground. You can read more about it here.
+What does Control+C (^C) do?
+Pressing Control+C in the terminal, causes the Unix terminal to send the SIGINT signal to the process running in the terminal foreground. This will usually terminate the process.
+What does Control+Z (^Z) do?
+Pressing Control+Z in the terminal, causes the Unix terminal to send the SIGTSTP signal to the process running in the terminal foreground. This will suspend the process (meaning the process will still live in background).
+
+Do not use Control+Z for terminating processes!!!
+Writing a simple program
+Write a simple echo program named my_echo:
+NAME
+my_echo - echoes text.
+SYNOPSIS
+my_echo
+DESCRIPTION
+my_echo prints out the text given in the command line by the user.
+EXAMPLES
+#> my_echo aa b c
+aa b c
+    
+Mandatory requirements
+Create a proper makefile as described in the reading material.
+Test your program to see that it actually works…
+
+The tasks below are to be done only during the lab session!
+Students coming with ready code "from home" will be assigned low priority and will have to demonstrate re-writing all the code again from scratch. Additionally, you are expected (of course) to understand your code completely.
+Task 1: The encoder program
+In this task we will write a program that encodes characters from the input text.
+As stated in task 0 and the reading material, you should already have consulted the man pages for strncmp(3), fgetc(3), fputc(3), fopen(3), fclose(3) before the lab.
+Task 1 consists of three subtasks: 1a, 1b, 1c and 1d, each building on top of the previous subtask. Therefore, your program for each task should contain all the features from the previous tasks.
+
+Task 1a: A restricted encoder version - conversion to lowercase
+The encoder program should be implemented as follows:
+NAME
+encoder - encodes the input text as lowercase letters.
+SYNOPSIS
+encoder
+DESCRIPTION
+encoder reads the characters from standard input and prints the corresponding lowercase characters to the standard output. Non uppercase characters remain unchanged.
+EXAMPLES
+#> encoder
+Hi, my name is Noah
+hi, my name is noah
+^D
+#>
+    
+Information
+stdin and stdout are FILE* constants than can be used with fgetc and fputc.
+Make sure you know how to recognize end of file ( EOF ).
+Control-D causes the Unix terminal driver to signal the EOF condition to the process running in this terminal foreground, using this key combination (shown in the above example as ^D) will cause fgetc to return an EOF constant and in response your program should terminate itself "normally".
+Refer to ASCII table for more information on how to convert characters to lower-case or upper-case.
+Mandatory requirements
+You must read and process the input character by character, there is no need to store the characters you read at all.
+Important - you cannot make any assumption about the line length.
+Check whether a character is an uppercase letter by using a single "if" statement with two conditions. How?
+You are not allowed to use any library function for the purpose of recognizing whether a character is a letter, and its case.
+Task 1b: Extending the encoder to support debug mode
+As you develop a program, it is important to allow for easy debugging. The debug mode which you introduce here explains this idea. Using this scheme, any program can be run in a debug mode that allows special debugging features for testing the program. As a minimum, implemented here, when in debug mode the program print out important information to stderr. Printing out the command-line parameters allows for easy detection of errors in retrieving them.
+
+NAME
+encoder - encodes the input text as lowercase letters.
+SYNOPSIS
+encoder [OPTION]…
+DESCRIPTION
+encoder receives text characters from standard input and prints the corresponding lowercase characters to the standard output.
+The debug mode is activated via command-line argument (-D).
+If the debug-mode is activated, print the command-line arguments to stderr and each character you recieve from the input (hexa-decimal value) before and after the conversion.
+regardless of the debug-mode, the encoder will convert characters into lowercase.
+EXAMPLES
+#> encoder -D
+-D
+Hi, my name is Noah
+0x48    0x68
+0x69    0x69
+0x2c    0x2c
+0x20    0x20
+0x6d    0x6d
+0x79    0x79
+0x20    0x20
+0x6e    0x6e
+0x61    0x61
+0x6d    0x6d
+0x65    0x65   
+0x20    0x20
+0x69    0x69
+0x73    0x73
+0x20    0x20
+0x4e    0x6e
+0x6f    0x6f
+0x61    0x61
+0x68    0x68
+0x0a    0x0a
+hi, my name is noah
+^D
+#>
+Note: the left colomn is the hexadecimal representation of the input characters whereas the right colomn is the hexadecimal representation of the modified characters (in this case switched from upper-case to lower-case)
+Mandatory requirements
+You are not allowed to use any library function for the purpose of recognizing whether a character is a letter and its case.
+Read your program parameters in the manner of task0 main.c, first set default values to the variables holding the program configuration and then scan through argv to update those values. Points will be reduced for failing to do so.
+
+Task 1c: Extending the encoder to support encryption
+ch deviate from the instructions will not be graded!
+Please make your output is exactly as the examples bellow.
+
+NAME
+encoder - encodes the input text using encryption key.
+SYNOPSIS
+encoder [OPTION]…
+DESCRIPTION
+encoder receives characters from standard input and prints the corresponding encrypted characters to the standard output. The encryption key is given as a command-line argument.
+If no argument is supplied, the encoder converts characters into lowercase as before.
+The encryption key is of the following structure: +e{key}. The argument {key} stands for a sequence of characters, whose ASCII value will be added to each input characters in sequence, in a cyclic manner.
+This means that each character in sequence recieved by the encoder is added to the coresponding character in sequence in the key. When and if the end of the key is reached, re-start reading encoding characters from the begining of the key.
+You should support both addition and substruction, +e{key} is for addition and -e{key} is for substruction.
+
+EXAMPLES
+#> encoder +eABC12
+123456
+rtvegwL
+12#<
+rtfm<
+^D
+#> encoder -e#1%%
+frxuob^W
+CASPL192
+^D
+In the output of the second example there should be another character (the encrypted new-line character 0xA).
+Task 1d: Supporting input from a file
+NAME
+encoder - encoders the input text as lowercase or encrypted letters.
+SYNOPSIS
+encoder [OPTION]…
+DESCRIPTION
+encoder reads characters from standard input or from a file and prints the corresponding lowercase characters or encrypted characters (depending on whether the encryption key was given) to the standard output.
+If no encryption key argument is supplied, the encoder only converts upper-case characters into lowercase.
+OPTIONS
+-iFILE
+Input file. Read list of characters to be encoded from a file, instead of from standard input.
+
+ERRORS
+If FILE cannot be opened for reading, print an error message to standard error and exit.
+EXAMPLES
+#> echo 'frxuob^W' > input
+#> encoder -e#1%% -iinput
+CASPL192
+Notice that there is no seperation between the -i indicator and the file name (same as in the encryption key).
+Task 2: Supporting output to a file
+NAME
+encoder - encodes the input text as lowercase or encrypted letters.
+SYNOPSIS
+encoder [OPTION]…
+DESCRIPTION
+encoder reads ASCII text characters from standard input or from a file and prints the corresponding lowercase characters or encrypted characters (depending on whether the encryption key was given) to the standard output or the given file. The encryption key is given as an argument.
+If no encryption key argument is supplied, the encoder only converts upper-case characters into lower-case.
+OPTIONS
+-iFILE
+Input file. Read list of characters to be encoded from a file, instead of from standard input.
+-oFILENAME
+Output file. Prints output to a file named FILENAME instead of the standard output.
+EXAMPLES
+#> encoder -e#1%% -ooutput
+frxuob^W
+^D
+#> more output
+CASPL192
+    
+In the output of the example there should be another character (the encrypted new-line character 0xA).
+Notice that there is no seperation between the -o indicator and the file name (same as in the encryption key and the input file name).
+
+Mandatory requirements
+Program arguments may arrive in an arbitrary order. Your program must support this feature.
+Deliverables:
+Task 1 must be completed during the regular lab. Task 2 may be done in a completion lab, but only if you run out of time during the regular lab. The deliverables must be submitted until the end of the day.
+You must submit source files for task1D and task2 in respective folders, and also a makefile that compiles them. The source files must be organized in the following tree structure (where '+' represents a folder and '-' represents a file):
++ task1D
+   - makefile
+   - encoder.c
++ task2
+   - makefile
+   - encoder.c
+Submission instructions
+Create a zip file with the relevant files (only).
+Upload zip file to the submission system.
+Download the zip file from the submission system and extract its content to an empty folder.
+Compile and test the code to make sure that it still works.
+
+Page last modified on 29 April 2019, 15:27 by jumanan
+powered by CourseWiki 2.4.2 , gzip supported
+generated in 0.00049228 sec.
