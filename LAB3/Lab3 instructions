@@ -1,0 +1,199 @@
+
+1 C Programming: debugging, dynamic data structures: linked lists, patching binary files.
+1.1 Task 0: Memory Leaks, Segmentation Faults, and Printing data from files in hexadecimal format
+2 Lab Instructions
+3 Task 1: Virus detector using Linked Lists
+3.1 Task 1a - Reading a binary file into memory buffers
+3.2 Task 1b - Linked List Implementation
+3.3 Task 1c - Detecting the virus
+4 Task 2: Anti-virus Simulation
+4.1 Task 2a: Using hexedit.
+4.2 Task 2b: Killing the virus automatically.
+4.3 Deliverables
+C Programming: debugging, dynamic data structures: linked lists, patching binary files.
+Lab goals:
+
+Pointers and dynamically allocated structures and the "valgrind" utility
+Understanding data structures: linked lists in C
+Basic access to "binary" files, with application: simplified virus detection in executable files
+
+In this lab you are required to use valgrind to make sure your program is "memory-leak" free.
+You should use valgrind in the following manner: valgrind --leak-check=full [your-program] [your-program-options]
+Task 0: Memory Leaks, Segmentation Faults, and Printing data from files in hexadecimal format
+Programs inevitably contain bugs, at least when they are still being developed. Interactive debugging using valgrind(1) helps locate and eliminate bugs. valgrind assists in discovering illegal memory access even when no segmentation fault occurs (e.g. when reading the n+1 place of an array of size n). valgrind is extremely useful for discovering and fixing memory errors (leaks, double free, illegal access etc).
+To run valgrind write: valgrind --leak-check=full [program-name] [program parameters].
+Using the command line argument --leak-check=full gives detailed information regarding each leak. Useful for finding the source of the leak and fixing it.
+
+You might be able to get more information by running Valgrind in verbose mode like so:
+valgrind -v --leak-check=full [program-name] [program parameters]. You can even increase the level of verbosity by multiplying the "v" command line option: valgrind -vvv --leak-check=full [program-name] [program parameters].
+
+The source code of a buggy program, bubblesort.c, is provided. The program should sort numbers specified in the command line and print the sorted numbers, like this:
+
+$ bubblesort 3 4 2 1
+Original array: 3 4 2 1
+Sorted array: 1 2 3 4
+However, an illegal memory access causes a segmentation fault (segfault). In addition, the program has a few memory leaks.
+First solve the segfault using gdb (or just by reading the code). Then use valgrind to find the memory leaks and fix them.
+Write a program that receives the name of a binary file as a command-line argument, and prints the hexadecimal value of each byte in the file in sequence to the standard output (using printf). Consult the printf(3) man page for hexadecimal format printing.
+NAME
+hexaPrint - prints the hexdecimal value of the input bytes from a given file
+SYNOPSIS
+hexaPrint FILE
+DESCRIPTION
+hexaPrint receives, as a command-line argument, the name of a "binary" file, and prints the hexadecimal value of each byte to the standard output, separated by spaces.
+For example, your program will print the following output for this exampleFile (download using right click, save as):
+
+#>hexaPrint exampleFile
+63 68 65 63 6B AA DD 4D 79 0C 48 65 78
+You should implement this program using:
+
+fread(3) to read data from the file into memory.
+A helper function, PrintHex(buffer, length), that prints length bytes from memory location buffer, in hexadecimal format.
+
+You will need the helper function during the lab, so make sure it is well written and debugged.
+Lab Instructions
+Lab goals - understanding the following issues: implementing linked lists in C, basic manipulation of "binary" files.
+In this lab you will be writing a virusDetector program, to detect computer viruses in a given suspected file.
+NAME
+virusDetector - detects a virus in a file from a given set of viruses
+SYNOPSIS
+virusDetector FILE
+DESCRIPTION
+virusDetector compares the content of the given FILE byte-by-byte with a pre-defined set of viruses described in the signatures file. The comparison is done according to a naive algorithm described in task2.
+
+FILE - the suspected file
+Task 1: Virus detector using Linked Lists
+In the current task you are required to read the signatures of the viruses from the signatures file and to store these signatures in a dedicated linked list data structure. Note that the command-line argument FILE is not used in subtasks 1a and 1b below. At a later stage (task 1c) you will compare the virus signatures from the list to byte sequences from a suspected file, named in the command-line argument.
+Task 1a - Reading a binary file into memory buffers
+The signatures file contains details of different viruses in a specific format. It consists of blocks (<N,name,signature>) where each block represents a single virus description.
+
+Notice the format is little endian - the numbers (i.e. the length of the virus) are represented in little endian notation.
+
+The name of the virus is a null terminated string that is stored in 16 bytes. If the length of the actual name is smaller than 16, then the rest of the bytes are padded with null.
+
+
+The layout of each block is as follows:
+offset	size (in bytes)	description
+0	2	The struct length N, up to 2^16 little endian
+2	16	The virus name represented as a null terminated string
+18	M (=N- 18)	The virus signature
+
+
+For example, the following hexadecimal signature.
+17 00 56 49 52 55 53 00 00 00 00 00 00 00 00 00 00 00 31 32 33 34 35
+represents a 5-byte length virus, whose signature (viewed as hexadecimal) is:
+
+31 32 33 34 35
+and its name is VIRUS
+
+In this task you are required to load the content of the signatures file into memory, and to print out the data for debugging. To read the file, use fread(). See man fread(3) for assistance.
+To test your implementation write a code snippet which scans the file and prints, for each virus description in the file, the virus name (in ASCII), the virus signature length (in decimal) and the virus signature (in hexadecimal representation). Compare your output with the out file.
+In this task you may assume that the signatures file name is known at compile time, and is a constant name such as "signatures". You should read each virus description into the following struct:
+
+download
+typedef struct virus {
+    unsigned short SigSize;
+    char virusName[16];
+    char sig[];
+} virus;
+Note that sig is a flexible sized array which requires you to compile your code without the ansi flag.
+Reading into structs
+The structure of the virus description on file allows reading an entire description into a virus struct in 2 fread calls. You should read the first two bytes of each description to have the length, then read the rest directly into a virus struct.
+Task 1b - Linked List Implementation
+Each node in the linked list is represented by the following structure:
+download
+typedef struct link link;
+ 
+struct link {
+    link *nextVirus;
+    virus *vir;
+};
+You are expected to implement the following functions:
+
+download
+void list_print(link *virus_list); 
+     /* Print the data of every link in list. Each item followed by a newline character. */
+ 
+link* list_append(link* virus_list, virus* data); 
+     /* Add a new link with the given data to the list 
+        (either at the end or the beginning, depending on what your TA tells you),
+        and return a pointer to the list (i.e., the first link in the list).
+        If the list is null - create a new entry and return a pointer to the entry. */
+ 
+void list_free(link *virus_list); /* Free the memory allocated by the list. */
+To test your list implementation you are requested to write a program with the following prompt in an infinite loop. You should use the same scheme for printing and selecting menu items as at the end of lab 2.
+
+download
+1) Load signatures
+2) Print signatures
+3) Quit
+Load signatures requests a signature file name parameter from the user after the user runs it by entering "1".
+After the signatures are loaded, Print signatures can be used to print them to the screen. If no file was loaded nothing is printed. You should read the user's input using fgets and sscanf.
+
+Test yourself by:
+
+Read the signatures of the viruses into buffers in memory.
+Creates a linked list that contains all of the viruses where each node represents a single virus.
+Prints the content. Here's an example output out.
+Task 1c - Detecting the virus
+Now that you have loaded the virus descriptions into memory, extend your virusDetector program as follows:
+extend the prompt presented to the user as follows:
+download
+1) Load signatures
+2) Print signatures
+3) Detect viruses
+4) Quit
+Detect viruses requests a file name parameter from the user after the user runs it by entering "3".
+Open and fread() the entire contents of the suspected file into a buffer of constant size 10K bytes in memory.
+Scan the content of the buffer to detect viruses.
+
+For simplicity, we will assume that the file is smaller than the buffer, or that there are no parts of the virus that need to be scanned beyond that point, i.e. we will only fill the buffer once. The scan will be done by a function with the following signature:
+download
+void detect_virus(char *buffer, unsigned int size)
+The detect_virus function compares the content of the buffer byte-by-byte with the virus signatures stored in the virus_list linked list. size should be the minimum between the size of the buffer and the size of the suspected file in bytes. If a virus is detected, for each detected virus the detect_virus function prints the following details to the standard output:
+
+The starting byte location in the suspected file
+The virus name
+The size of the virus signature
+
+If no viruses were detected, the function does not print anything.
+Use the memcmp(3) function to compare the bytes of the respective virus signature with the bytes of the suspected file.
+You can test your program by applying it to the signatures file.
+
+Task 2: Anti-virus Simulation
+In this task you will test your virus detector, and use it to help remove viruses from a file. You are required to apply your virus detector to an infected file, which is infected by a very simple virus that prints the sentence 'I am virus1!' to the standard output. You are expected to cancel the effect of the virus by using the hexedit(1) tool after you find it's location and size using your virus detector.
+Task 2a: Using hexedit.
+After making sure that your virus detector program from task 1 can correctly detect the virus information, you are required to:
+Download the infected file (using right click, save as).
+Set the file permissions (in order to make it executable) using chmod u+x infected, and run it from the terminal to see what it does.
+Apply your virusDetector program to the infected file, to find the viruses.
+Using the hexedit(1) utility and the output of the previous step, find out the viruses location and cancel their effect by replacing all virus code by NOP instructions.
+Task 2b: Killing the virus automatically.
+Implement yourself the functionality described above, do it as follows:
+extend the prompt presented to the user as follows:
+download
+1) Load signatures
+2) Print signatures
+3) Detect viruses
+4) Fix file
+5) Quit
+"Fix file" will request the user to enter the the starting byte location in the suspected file (again the one given as the command-line argumen) and the size of the virus signature.
+The fix will be done by the following function:
+download
+void kill_virus(char *fileName, int signitureOffset, int signitureSize)
+Hint: use fseek( ), fwrite( )
+
+Bonus question: Alternately, you may replace some of the virus code by a different instruction (not NOP)- what is the smallest required change?
+Deliverables
+As for all labs, you should complete task 0 before attending the lab session. Tasks 1a, 1b and 1c need to be done during the lab. Task 2, may be done in a completion lab.
+
+The deliverables must be submitted until the end of the lab session.
+You must submit source file and appropriate makefile for task 1c. The source file and the respective makefile must be named task1c.c task2b.c and makefile
+Submission instructions
+Create a zip file with the relevant files (student_id.ZIP).
+Upload zip file to the submission system.
+Download the zip file from the submission system and extract its content to an empty folder.
+Compile and test the code to make sure that it still works.
+Page last modified on 27 March 2019, 14:01 by llutan
+powered by CourseWiki 2.4.2 , gzip supported
+generated in 0.00048556 sec.
