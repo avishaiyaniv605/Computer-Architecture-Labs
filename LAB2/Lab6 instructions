@@ -1,0 +1,315 @@
+1 Program Memory and Pointers, Debugging and Simulating Object Oriented Programming
+2 (This lab is to be done SOLO)
+2.1 Task 0: Using gdb(1) to debug segmentation fault
+2.2 Task 1: Understanding memory addresses and pointers
+2.2.1 T1a - Addresses
+2.2.2 T1b - Distances
+2.2.3 T1c - Arrays memory layout
+2.2.4 T1d - Pointers and arrays
+2.3 Task 2 - Structs and pointers to functions
+2.3.1 Task 2a
+2.3.2 Task 2b
+2.3.3 T2c - Adding an option to exit
+2.3.4 Task 3 - Menu
+2.4 Deliverables
+Program Memory and Pointers, Debugging and Simulating Object Oriented Programming
+Lab goals:
+
+C primer - continued
+Understanding storage addresses, introduction to pointers
+Pointers to basic data types, to structures, and to functions
+Simulating object-like behavior in C
+
+(This lab is to be done SOLO)
+Task 0: Using gdb(1) to debug segmentation fault
+You should finish this task before attending the lab session.
+
+C is a low-level language. Execution of a buggy C program may cause its abnormal termination due to segmentation fault — illegal access to a memory address. Debugging segmentation faults can be a laborious task.
+
+gdb(1), the GNU Debugger, is a powerful tool for program debugging and inspection. When a program is compiled for debugging and run inside gdb, the exact location of segmentation fault can be determined. In addition, the state of the processor registers and values of the variables at the time of the fault can be examined.
+
+The source code for a buggy program, count-words, is provided in file count-words.c. The program works correctly most of the time, but when called with a single word on the command line, terminates due to segmentation fault.
+
+Write a Makefile for the program.
+Specify compilation flags appropriate for debugging using gdb.
+Find the location and the cause of the segmentation fault using gdb.
+Fix the bug and make sure the program works correctly.
+The tasks below are to be done only during the lab session! Any code written before the lab will not be accepted.
+Task 1: Understanding memory addresses and pointers
+Logical virtual memory layout of a process is fixed in Linux. One can guess from the numerical value of a memory address whether the address points to:
+
+a static or a global variable,
+a local variable or a function argument,
+a function.
+Here is a useful link (in addition to what you've heard in class).
+T1a - Addresses
+Read, compile and run the addresses.c program (remember to use the -m32 flag).
+Can you tell the location (stack, code, etc.) of each memory address?
+What can you say about the numerical values? Do they obey a particular order?
+T1b - Distances
+Understand and explain to the TA the purpose of the distances printed in the point_at function.
+Where is each memory address allocated and what does it have to do with the printed distance?
+T1c - Arrays memory layout
+In this task we will examine the memory layout of arrays.
+Define four arrays of length 3 as shown below and print the memory address of each array cell.
+
+download
+int iarray[3];
+float farray[3];
+double darray[3];
+char carray[3];
+Print the hexadecimal values of iarray, iarray+1, farray, farray+1, darray, darray+1, carray and carray+1 (the values of these pointers, not the values pointed by the pointers). What can you say about the behavior of the '+' operator?
+Given the results, explain to the TA the memory layout of arrays.
+T1d - Pointers and arrays
+Array names are essentially pointer constants. Instead of using the arrays, use the pointers below to access array cells.
+download
+int iarray[] = {1,2,3};
+char carray[] = {'a','b','c'};
+int* iarrayPtr;
+char* carrayPtr;
+Initialize the pointers iarrayPtr and carrayPtr to point to the first cell of the arrays iarray and carray respectively. Use the two pointers (iarrayPtr,carrayPtr) to print all the values of the two arrays.
+
+Add an uninitialized pointer local variable p, and print its value (not the value it points to). What did you observe?
+
+Task 2 - Structs and pointers to functions
+Let us recall the following definition:
+Pointers to functions - C allows declaring pointers to functions. The syntax is: function_return_type (*pointer_name)(arguments_list); for simple types of return value and arguments. You can read more about pointers to functions here.
+
+The following code is the base file for task 2 - you should complete it as stated in the sub tasks.
+downloadtoggle
+18 lines ...
+#include <stdio.h>
+#include <string.h>
+ 
+char censor(char c) {
+  if(c == '!')
+    return '.';
+  else
+    return c;
+}
+ 
+char* map(char *array, int array_length, char (*f) (char)){
+  char* mapped_array = (char*)(malloc(array_length*sizeof(char)));
+  /* TODO: Complete during task 2.a */
+  return mapped_array;
+}
+ 
+int main(int argc, char **argv){
+  /* TODO: Test your code */
+}
+Please read the Deliverables section before continuing.
+
+Task 2a
+Implement the map function that receives a pointer to a char (a pointer to a char array), an integer, and a pointer to a function. Map returns a new array (after allocating space for it), such that each value in the new array is the result of applying the function f on the corresponding character in the input array.
+download
+char* map(char *array, int array_length, char (*f) (char));
+Example:
+
+download
+char arr1[] = {'H','E','Y','!', 0};
+char* arr2 = map(arr1, 5, censor);
+printf("%s\n", arr2); 
+free(arr2);
+Do not forget to free allocated memory.
+
+Task 2b
+Implement the following functions.
+download
+char encrypt(char c); /* Gets a char c and returns its encrypted form by adding 3 to its value. 
+          If c is not between 0x20 and 0x7E it is returned unchanged */
+char decrypt(char c); /* Gets a char c and returns its decrypted form by reducing 3 to its value. 
+            If c is not between 0x20 and 0x7E it is returned unchanged */
+char xprt(char c); /* xprt prints the value of c in a hexadecimal representation followed by a 
+           new line, and returns c unchanged. */
+char cprt(char c); /* If c is a number between 0x20 and 0x7E, cprt prints the character of ASCII value c followed 
+                    by a new line. Otherwise, cprt prints the dot ('.') character. After printing, cprt returns 
+                    the value of c unchanged. */
+char my_get(char c); /* Ignores c, reads and returns a character from stdin using fgetc. */
+Example:
+
+downloadtoggle
+11 lines ...
+int base_len = 5;
+char arr1[base_len];
+char* arr2 = map(arr1, base_len, my_get);
+char* arr3 = map(arr2, base_len, encrypt);
+char* arr4 = map(arr3, base_len, xprt);
+char* arr5 = map(arr4, base_len, decrypt);
+char* arr6 = map(arr5, base_len, cprt);
+free(arr2);
+free(arr3);
+free(arr4);
+free(arr5);
+free(arr6);
+Result: 
+Hey! // this is the user input.
+0x4B
+0x68
+0x7C
+0x24
+0XA
+H
+e
+y
+!
+.
+Do not forget to free allocated memory.
+There is no need to encrypt/decrypt letters in a cyclic manner, simply add/reduce 3.
+
+T2c - Adding an option to exit
+Implement the following function:
+download
+char quit(char c); /* Gets a char c, and ends the program returning 0 */
+This function terminates the program "normally" and "successfully" using the exit system call (as mentioned in the lab's reading material). The use of such a function will be clarified in task 3.
+
+There is no need to do anything other than call the exit function
+Task 3 - Menu
+struct - A struct in the C programming language is a structured type that aggregates a fixed set of labeled items, possibly of different types, into a single entity similar to an "object".
+The struct size equals the sum of the sizes of its objects plus alignment (if needed). You can get the size by using the sizeof operator as follows: sizeof(struct struct_name).
+A function pointer can be a field in a structure, thus several functions can be accessed through a single data structure or container.
+
+An array of function descriptors, each represented by a structure holding the function name (or description) and a pointer to the function, can be used to implement a program menu. Using the following structure definition:
+
+download
+struct fun_desc {
+  char *name;
+  char (*fun)(char);
+};
+Alternatively, you can define this as a "typedef" as shown in class.
+
+Below is an example of declaration and initialization of a two-element array of "function descriptors":
+download
+struct fun_desc menu[] = { { "hello", hello }, { "bye", bye }, { NULL, NULL } };
+Using the code from 2c, write a program called menu that performs the following.
+
+Defines a pointer 'carray' to a char array of length 5, initialized to the empty string (how?).
+Defines an array of fun_desc and initializes it (in the declaration, not as program code within a function) to the names and the pointers of the functions that you implemented in Task 2. The last fun_desc in the array should contain a null pointer name and a null pointer to function (the length of the array should not be kept explicitly after constructing it).
+Displays a menu (as a numbered list) of names (or descriptions) of the functions contained in the array. The menu should be printed by looping over the menu item names from the fun_desc, not by printing a string (or strings) that contain a copy of the name.
+Displays a prompt asking the user to choose a function by its number in the menu, reads the number, and checks if it is within bounds. The bound should be pre-computed only once, and before the loop where the prompt is printed. If the number is within bounds, "Within bounds" is printed, otherwise "Not within bounds" is printed and the program exits gracefully.
+Evaluate the appropriate function over 'carray' (using map) according to the number entered by the user. Note that you should call the function by using the function pointer in the array of structures, and not by using "if" or "switch".
+After calling any menu function (other than 'quit'), let 'carray' point to the new array returned by map( ).
+
+Usage Example:
+#> menu
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 5
+Within bounds
+Best
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 5
+Within bounds
+Lab2
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 1
+Within bounds
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 4
+Within bounds
+O
+d
+e
+5
+.
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 2
+Within bounds
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 4
+Within bounds
+L
+a
+b
+2
+.
+DONE.
+
+Please choose a function:
+0) Censor
+1) Encrypt
+2) Decrypt
+3) Print hex
+4) Print string
+5) Get string
+6) Quit
+Option: 6
+Within bounds
+Is it possible to call a function at an invalid address in your version of the program?
+Bonus item (0 points) Add a menu item for "junk", where the pointer to function is initialized to point to something that is not known function code, such as your fun_desc array. Compile and run the modified program, and select the junk menu item. What do you observe?
+
+The quit function
+In task 2c we have defined the quit function as a function that gets and returns a char. This is an unusual implementation, however, it enabled us to nicely add a quit option to the menu that follows the same architecture of the assignment. We did not have to explicitly write a separate menu item for the quit option. Be that as it may, notice that it is a quick and dirty "trick" and it is not the generally recommended way of constructing menus.
+Deliverables
+As for all labs, you should complete task 0 before the lab, and make sure you understand what you did.
+
+During the lab, you should complete at least task 1 and 2 and as much as possible from task 3. If you cannot finish task 3 before the end of the lab, you should complete it during a make-up lab.
+
+There is no penalty for not completing task 3 during the first lab session, provided you came prepared, on time, and worked seriously on the tasks for the entire duration of the lab.
+
+The deliverables must be submitted until the end of the day.
+You must submit source files for task2C and task3 in respective folders, and also a makefile that compiles them. The source files must be organized in the following tree structure (where '+' represents a folder and '-' represents a file):
++ task2C
+   - makefile
+   - menu_map.c
++ task3
+   - makefile
+   - menu_map.c
+Submission instructions
+Create a zip file with the relevant files (only).
+Upload zip file to the submission system.
+Download the zip file from the submission system and extract its content to an empty folder.
+Compile and test the code to make sure that it still works.
+Page last modified on 17 March 2019, 11:22 by llutan
+powered by CourseWiki 2.4.2 , gzip supported
+generated in 0.00049414 sec.
